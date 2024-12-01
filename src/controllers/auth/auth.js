@@ -67,14 +67,12 @@ export const loginDeliveryPartner = async (req, res) => {
 
     const { accessToken, refreshToken } = generateToken(deliveryPartner)
 
-    res
-      .status(200)
-      .json({
-        accessToken,
-        refreshToken,
-        deliveryPartner,
-        message: ' Login Successfully'
-      })
+    res.status(200).json({
+      accessToken,
+      refreshToken,
+      deliveryPartner,
+      message: ' Login Successfully'
+    })
   } catch (error) {
     res.status(500).json({ message: error.message })
   }
@@ -109,6 +107,28 @@ export const refreshToken = async (req, res) => {
     // RETURN RESPONSE!
     res.status(200).json({ accessToken, refreshToken: newRefreshToken })
   } catch (err) {
+    res.status(500).json({ message: err.message })
+  }
+}
+
+export const fetchUser = async (req, res) => {
+  try {
+    const { userId, role } = req.user // get user from verifyToken middleware
+
+    let user
+
+    if (role === 'Customer') {
+      user = await Customer.findById(userId)
+    } else {
+      user = await DeliveryPartner.findById(userId)
+    }
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' })
+    }
+
+    res.status(200).json({ user, message: 'User fetched success!' })
+  } catch (error) {
     res.status(500).json({ message: err.message })
   }
 }
