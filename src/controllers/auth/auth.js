@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken'
+import { Customer } from '../../models/user.model.js'
 
 const generateToken = user => {
   const accessToken = jwt.sign(
@@ -19,4 +20,30 @@ const generateToken = user => {
   )
 
   return { accessToken, refreshToken }
+}
+
+export const loginCustomer = async (req, res) => {
+  try {
+    const { phone } = req.body
+
+    let customer = await Customer.findOne({ phone: phone })
+
+    if (!customer) {
+      customer = new Customer({
+        phone: phone,
+        role: 'customer',
+        isActivated: true
+      })
+
+      await customer.save()
+    }
+
+    const { accessToken, refreshToken } = generateToken(customer)
+
+    res
+      .status(200)
+      .json({ accessToken, refreshToken, message: ' Login Successfully' })
+  } catch (error) {
+    res.status(500).json({ message: error.message })
+  }
 }
