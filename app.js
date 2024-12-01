@@ -3,11 +3,14 @@ import { connectDB } from './src/config/connect.js'
 
 import "dotenv/config"
 import { admin, buildAdminRouter } from './src/config/steup.js'
+import { registerRoutes } from './src/routes/index.js'
 
 const start = async () => {
   await connectDB(process.env.MONGO_URI)
   const app = fastify()
-  await buildAdminRouter(app);
+
+  await registerRoutes(app)
+  await buildAdminRouter(app)
   app.listen(3000,
     (err, addr) => {
       if (err) {
