@@ -44,3 +44,44 @@ export const createOrder = async (req, res) => {
     return res.status(500).send(error)
   }
 }
+
+export const confirmOrder = async (req, res) => {
+  try {
+    const { orderId } = req.params
+
+    const { userId } = req.user
+    const { deliveryPersonLocation } = req.body
+
+    const deliveryPerson = await DeliveryPerson.findById(userId)
+
+    if (!deliveryPerson)
+      return res.status(404).send('Delivery person not found')
+
+    const order = await Order.findById(orderId)
+
+    if (!order) return res.status(404).send('Order not found')
+
+    if (order.status !== 'available') {
+      return res.status(400).send('Order already confirmed')
+    }
+
+    order.deliveryPerson = userId
+    order.deliveryPersonLocation = {
+      latitude: deliveryPersonLocation.latitude,
+      longitude: deliveryPersonLocation.longitude,
+      address: deliveryPersonLocation.address || ''
+    }
+    order.status = 'confirmed'
+
+    await order.save()
+
+    return res.status(200).send(order)
+  } catch (error) {
+    return res.status(500).send(error)
+  }
+}
+
+export const updateOrderStatus = async (req, res) => {
+  try {
+  } catch (error) {}
+}
