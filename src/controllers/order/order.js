@@ -98,22 +98,53 @@ export const updateOrderStatus = async (req, res) => {
 
     if (!order) return res.status(404).send('Order not found')
 
-    if (["cancelled","delivered"].includes(order.status)) {
+    if (['cancelled', 'delivered'].includes(order.status)) {
       return res.status(400).send('Order cannot be updated')
     }
 
-    if(order.deliveryPartner.toString() !== userId){
+    if (order.deliveryPartner.toString() !== userId) {
       return res.status(401).send('Unauthorized')
     }
 
     order.status = status
 
     order.deliveryPersonLocation = deliveryPersonLocation
-    await order.save();
+    await order.save()
 
     return res.status(200).send(order)
+  } catch (error) {
+    return res.status(500).send(error)
+  }
+}
 
+// get orders!
+export const getOrders = async (req, res) => {
+  try {
+    const { status, customerId, deliveryPartnerId, branchId } = req.query
 
+    let query = {}
+
+    if (status) {
+      query.status = status
+    }
+
+    if (customerId) {
+      query.customer = customerId
+    }
+
+    if (deliveryPartnerId) {
+      query.deliveryPartner = deliveryPartnerId
+    }
+
+    if (branchId) {
+      query.branch = branchId
+    }
+
+    const orders = await Order.find(query).populate(
+        "customer branch items.item deliveryPartner"
+    )
+
+    return res.status(200).send(orders)
   } catch (error) {
     return res.status(500).send(error)
   }
