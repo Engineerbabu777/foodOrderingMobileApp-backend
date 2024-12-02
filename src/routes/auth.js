@@ -11,4 +11,6 @@ export const authRoutes = async (fastify, options) => {
   fastify.post('/login/delivery-partner', loginDeliveryPartner)
   fastify.post('/refresh-token', refreshToken)
   fastify.get('/user', { preHandler: [verifyToken] }, fetchUser)
+  fastify.patch('/user', { preHandler: [verifyToken] }, fetchUser)
+  
 }
