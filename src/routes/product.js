@@ -1,5 +1,5 @@
-import { getAllCategories } from "../controllers/product/category"
-import { getProductsById } from "../controllers/product/product"
+import { getAllCategories } from "../controllers/product/category.js"
+import { getProductsById } from "../controllers/product/product.js"
 
 
 

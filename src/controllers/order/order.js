@@ -10,7 +10,7 @@ export const createOrder = async (req, res) => {
 
     const customerData = await Customer.findById(userId)
 
-    const branchData = await Branch.find(branch)
+    const branchData = await Branch.findById(branch)
 
     if (!branchData) return res.status(404).send('Branch not found')
 
@@ -31,11 +31,13 @@ export const createOrder = async (req, res) => {
         address: customerData.address || 'No address available'
       },
       pickupLocation: {
-        latitude: branchData.liveLocation.latitude,
-        longitude: branchData.liveLocation.longitude,
+        latitude: branchData.location.latitude,
+        longitude: branchData.location.longitude,
         address: branchData.address || 'No address available'
       }
     })
+
+
 
     const savedOrder = await order.save()
 
@@ -72,6 +74,8 @@ export const confirmOrder = async (req, res) => {
       address: deliveryPersonLocation.address || ''
     }
     order.status = 'confirmed'
+
+    req.server.io.to(orderId).emit("orderConfirmed", order);
 
     await order.save()
 
@@ -111,6 +115,9 @@ export const updateOrderStatus = async (req, res) => {
     order.deliveryPersonLocation = deliveryPersonLocation
     await order.save()
 
+    req.server.io.to(orderId).emit("liveTrackingUpdates", order);
+
+
     return res.status(200).send(order)
   } catch (error) {
     return res.status(500).send(error)
@@ -148,4 +155,25 @@ export const getOrders = async (req, res) => {
   } catch (error) {
     return res.status(500).send(error)
   }
+}
+
+
+export const getOrderById = async(req,res) => {
+    try {
+        
+        const {orderId} = req.params;
+
+        const order = await Order.findById(orderId)
+        .populate(
+            "customer branch items.item deliveryPartner" 
+        )
+
+        if(!orders){
+            return res.status(404).send("Order not found")
+        }
+
+        return res.status(200).send(order)
+    } catch (error) {
+        return res.status(500).send(error)
+    }
 }
